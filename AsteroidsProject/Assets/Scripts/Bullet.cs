@@ -11,6 +11,7 @@ public enum BulletSource
 public class Bullet : Destructible
 {
     // VARIABLES
+    private float lifeTime = 3.0f;
     [HideInInspector]
     public List<string> deathTags = new List<string>();
     private bool canMove = false;
@@ -47,6 +48,7 @@ public class Bullet : Destructible
     public void Shoot()
     {
         canMove = true;
+        StartCoroutine(DeathCounter());
     }
 
     public void SetSource(BulletSource bulletSource)
@@ -64,5 +66,12 @@ public class Bullet : Destructible
                 deathTags.Add("");
                 break;
         }
+    }
+
+    public IEnumerator DeathCounter()
+    {
+        yield return new WaitForSeconds(lifeTime);
+
+        Destroy(gameObject);
     }
 }

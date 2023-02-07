@@ -2,10 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerControl : SpaceShip
 {
     // VARIABLES
+    private bool isThrusting;
+    private float turnDirection;
+    private float turnSpeed = 100.0f;
 
     // FUNCTIONS
     protected override void Awake()
@@ -17,7 +21,8 @@ public class PlayerControl : SpaceShip
         deathAction = GetDeathAction(DeathActionType.Player);
         deathActionSet = true;
 
-
+        turnDirection = 0.0f;
+        speed = 3.0f;
     }
 
     protected override void OnTriggerEnter(Collider collider)
@@ -34,6 +39,26 @@ public class PlayerControl : SpaceShip
     {
         base.Update();
 
-        transform.position += transform.forward * speed * Time.deltaTime;
+        if (isThrusting) transform.position += transform.forward * speed * Time.deltaTime;
+        if (turnDirection != 0) transform.Rotate(0, turnDirection * turnSpeed * Time.deltaTime, 0);
+    }
+
+    public void Thrust(InputAction.CallbackContext context)
+    {
+        if (context.started) isThrusting = true;
+        if (context.canceled) isThrusting = false;
+    }
+
+    public void Turn(InputAction.CallbackContext context)
+    {
+        turnDirection = context.ReadValue<float>();
+        Debug.Log("Turn made, direction: " + turnDirection.ToString());
+    }
+
+    public void ShootEvent(InputAction.CallbackContext context)
+    {
+        if (context.canceled) return;
+
+        Shoot();
     }
 }

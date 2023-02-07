@@ -18,6 +18,7 @@ public class Destructible : MonoBehaviour
     protected float speed;
     protected Vector2 direction;
     protected float wrapOffset = 10.0f;
+    protected bool hasDied;
     protected Action deathAction;
     protected bool deathActionSet;
     public GameObject smallAsteroidPrefab, mediumAsteroidPrefab;
@@ -26,6 +27,7 @@ public class Destructible : MonoBehaviour
     protected virtual void Awake()
     {
         deathActionSet = false;
+        hasDied = false;
     }
 
     protected virtual void Update()
@@ -58,9 +60,16 @@ public class Destructible : MonoBehaviour
         switch (actionType)
         {
             case DeathActionType.Player:
-                return new Action(() => ExplodePlayer());
+                return new Action(() =>
+                {
+                    if (!hasDied) ExplodePlayer();
+                });
             case DeathActionType.MediumAsteroid:
-                return new Action(() => BreakAsteroid(false));
+                return new Action(() =>
+                {
+                    if (!hasDied) BreakAsteroid(false);
+                });
+            case Death
             case DeathActionType.LargeAsteroid:
                 return new Action(() => BreakAsteroid(true));
             case DeathActionType.Saucer:
@@ -79,6 +88,8 @@ public class Destructible : MonoBehaviour
 
     protected void BreakAsteroid(bool isLarge)
     {
+        Debug.Log("Asteroid broken");
+
         GameObject asteroidPiece = Instantiate(isLarge ? mediumAsteroidPrefab : smallAsteroidPrefab, transform.position + new Vector3(UnityEngine.Random.Range(-1.0f, 1.0f), 0.0f, UnityEngine.Random.Range(-1.0f, 1.0f)), Quaternion.identity);
         Vector2 pieceDirection = new Vector2(UnityEngine.Random.Range(-1.0f, 1.0f), UnityEngine.Random.Range(-1.0f, 1.0f)).normalized;
         if (isLarge) asteroidPiece.GetComponent<MediumAsteroid>().direction = pieceDirection;
@@ -88,10 +99,14 @@ public class Destructible : MonoBehaviour
         pieceDirection = new Vector2(UnityEngine.Random.Range(-1.0f, 1.0f), UnityEngine.Random.Range(-1.0f, 1.0f)).normalized;
         if (isLarge) asteroidPiece.GetComponent<MediumAsteroid>().direction = pieceDirection;
         else asteroidPiece.GetComponent<SmallAsteroid>().direction = pieceDirection;
+
+        Destroy(gameObject);
     }
 
     protected void ExplodeSaucer()
     {
+        // To-Do: Effect for explosion
 
+        Destroy(gameObject);
     }
 }

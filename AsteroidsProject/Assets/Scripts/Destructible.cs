@@ -6,10 +6,25 @@ using UnityEngine;
 public enum DeathActionType
 {
     Player,
+    SmallAsteroid,
     MediumAsteroid,
     LargeAsteroid,
-    Saucer,
+    SmallSaucer,
+    BigSaucer,
     Other
+}
+
+public enum AsteroidSize
+{
+    Small,
+    Medium,
+    Large
+}
+
+public enum SaucerSize
+{
+    Small,
+    Big
 }
 
 public class Destructible : MonoBehaviour
@@ -19,7 +34,7 @@ public class Destructible : MonoBehaviour
     protected Vector2 direction;
     protected float wrapOffset = 10.0f;
     protected bool hasDied;
-    protected Action deathAction;
+    public Action deathAction;
     protected bool deathActionSet;
     public GameObject smallAsteroidPrefab, mediumAsteroidPrefab;
 
@@ -64,16 +79,31 @@ public class Destructible : MonoBehaviour
                 {
                     if (!hasDied) ExplodePlayer();
                 });
+            case DeathActionType.SmallAsteroid:
+                return new Action(() =>
+                {
+                    if (!hasDied) BreakAsteroid(AsteroidSize.Small);
+                });
             case DeathActionType.MediumAsteroid:
                 return new Action(() =>
                 {
-                    if (!hasDied) BreakAsteroid(false);
+                    if (!hasDied) BreakAsteroid(AsteroidSize.Medium);
                 });
-            case Death
             case DeathActionType.LargeAsteroid:
-                return new Action(() => BreakAsteroid(true));
-            case DeathActionType.Saucer:
-                return new Action(() => ExplodeSaucer());
+                return new Action(() =>
+                {
+                    if (!hasDied) BreakAsteroid(AsteroidSize.Large);
+                });
+            case DeathActionType.SmallSaucer:
+                return new Action(() =>
+                {
+                    if (!hasDied) ExplodeSaucer(SaucerSize.Small);
+                });
+            case DeathActionType.BigSaucer:
+                return new Action(() =>
+                {
+                    if (!hasDied) ExplodeSaucer(SaucerSize.Big);
+                });
             case DeathActionType.Other:
                 return new Action(() => Destroy(gameObject));
             default:
@@ -83,30 +113,70 @@ public class Destructible : MonoBehaviour
 
     protected void ExplodePlayer()
     {
+        hasDied = true;
 
+        // Die and restart
+        if (PlayerData.Instance.currentLives > 0)
+        {
+            GameManager.Instance.RestartGame();
+        }
+        else
+        {
+            GameManager.Instance.EndGame();
+        }
     }
 
-    protected void BreakAsteroid(bool isLarge)
+    protected void BreakAsteroid(AsteroidSize asteroidSize)
     {
         Debug.Log("Asteroid broken");
+        hasDied = true;
 
-        GameObject asteroidPiece = Instantiate(isLarge ? mediumAsteroidPrefab : smallAsteroidPrefab, transform.position + new Vector3(UnityEngine.Random.Range(-1.0f, 1.0f), 0.0f, UnityEngine.Random.Range(-1.0f, 1.0f)), Quaternion.identity);
-        Vector2 pieceDirection = new Vector2(UnityEngine.Random.Range(-1.0f, 1.0f), UnityEngine.Random.Range(-1.0f, 1.0f)).normalized;
-        if (isLarge) asteroidPiece.GetComponent<MediumAsteroid>().direction = pieceDirection;
-        else asteroidPiece.GetComponent<SmallAsteroid>().direction = pieceDirection;
+        if (asteroidSize != AsteroidSize.Small)
+        {
+            Instantiate(asteroidSize == AsteroidSize.Large ? mediumAsteroidPrefab : smallAsteroidPrefab, transform.position + new Vector3(UnityEngine.Random.Range(-1.0f, 1.0f), 0.0f, UnityEngine.Random.Range(-1.0f, 1.0f)), Quaternion.identity);
+            Instantiate(asteroidSize == AsteroidSize.Large ? mediumAsteroidPrefab : smallAsteroidPrefab, transform.position + new Vector3(UnityEngine.Random.Range(-1.0f, 1.0f), 0.0f, UnityEngine.Random.Range(-1.0f, 1.0f)), Quaternion.identity);
+            GameManager.Instance.asteroidsActive += 2;
 
-        asteroidPiece = Instantiate(isLarge ? mediumAsteroidPrefab : smallAsteroidPrefab, transform.position + new Vector3(UnityEngine.Random.Range(-1.0f, 1.0f), 0.0f, UnityEngine.Random.Range(-1.0f, 1.0f)), Quaternion.identity);
-        pieceDirection = new Vector2(UnityEngine.Random.Range(-1.0f, 1.0f), UnityEngine.Random.Range(-1.0f, 1.0f)).normalized;
-        if (isLarge) asteroidPiece.GetComponent<MediumAsteroid>().direction = pieceDirection;
-        else asteroidPiece.GetComponent<SmallAsteroid>().direction = pieceDirection;
+        }
 
+        switch (asteroidSize)
+        {
+            case AsteroidSize.Small:
+                PlayerData.Instance.AddScore(50);
+                break;
+            case AsteroidSize.Medium:
+                PlayerData.Instance.AddScore(25);
+                break;
+            case AsteroidSize.Large:
+                PlayerData.Instance.AddScore(10);
+                break;
+            default:
+                break;
+        }
+
+        GameManager.Instance.asteroidsActive -= 1;
+        GameManager.Instance.CheckForNoEnemies();
         Destroy(gameObject);
     }
 
-    protected void ExplodeSaucer()
+    protected void ExplodeSaucer(SaucerSize saucerSize)
     {
-        // To-Do: Effect for explosion
+        hasDied = true;
 
+        switch (saucerSize)
+        {
+            case SaucerSize.Small:
+                PlayerData.Instance.AddScore(150);
+                break;
+            case SaucerSize.Big:
+                PlayerData.Instance.AddScore(75);
+                break;
+            default:
+                break;
+        }
+
+        GameManager.Instance.saucersActive -= 1;
+        GameManager.Instance.CheckForNoEnemies();
         Destroy(gameObject);
     }
 }

@@ -11,6 +11,9 @@ public class SmallSaucer : Saucer
     {
         base.Awake();
 
+        deathAction = GetDeathAction(DeathActionType.SmallSaucer);
+        deathActionSet = true;
+
         speed = 10.0f;
     }
 }

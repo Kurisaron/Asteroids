@@ -15,10 +15,7 @@ public class Saucer : SpaceShip
         Vector3 temp = new Vector3(UnityEngine.Random.Range(-1.0f, 1.0f), 0, UnityEngine.Random.Range(-1.0f, 1.0f)).normalized;
         shootDirection = new Func<Vector3>(() => temp);
         StartCoroutine(ShootRoutine());
-
-        deathAction = GetDeathAction(DeathActionType.Saucer);
-        deathActionSet = true;
-
+        
         direction = new Vector2(UnityEngine.Random.Range(-1.0f, 1.0f), UnityEngine.Random.Range(-1.0f, 1.0f)).normalized;
     }
 

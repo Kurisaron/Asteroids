@@ -9,7 +9,7 @@ public class PlayerControl : SpaceShip
     // VARIABLES
     private bool isThrusting;
     private float turnDirection;
-    private float turnSpeed = 100.0f;
+    private float turnSpeed = 200.0f;
 
     // FUNCTIONS
     protected override void Awake()
@@ -29,8 +29,9 @@ public class PlayerControl : SpaceShip
     {
         base.OnTriggerEnter(collider);
 
-        if (deathActionSet && collider.gameObject.tag == "Bullet" && collider.gameObject.GetComponent<Bullet>().deathTags.Contains("Player"))
+        if (deathActionSet && ((collider.gameObject.tag == "Bullet" && collider.gameObject.GetComponent<Bullet>().deathTags.Contains("Player")) || collider.gameObject.tag == "Asteroid" || collider.gameObject.tag == "Saucer"))
         {
+            Debug.Log("Player hit");
             deathAction();
         }
     }
@@ -60,5 +61,13 @@ public class PlayerControl : SpaceShip
         if (context.canceled) return;
 
         Shoot();
+    }
+
+    public void Warp(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            // TO-DO: Do warp
+        }
     }
 }

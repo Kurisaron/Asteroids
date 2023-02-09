@@ -11,7 +11,7 @@ public class SmallAsteroid : Asteroid
     {
         base.Awake();
 
-        deathAction = GetDeathAction(DeathActionType.Other);
+        deathAction = GetDeathAction(DeathActionType.SmallAsteroid);
         deathActionSet = true;
 
         speed = 3.0f;

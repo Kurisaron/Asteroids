@@ -5,13 +5,24 @@ using UnityEngine;
 public class PlayerData : Singleton<PlayerData>
 {
     // PROPERTIES
-    public int Level { get; private set; }
+    public int currentLives;
+    public int maxLives = 3;
+    public int currentScore;
+    public int highScore;
+    public int level;
 
     // FUNCTIONS
     public override void Awake()
     {
         base.Awake();
 
-        Level = 1;
+        currentLives = maxLives;
+        currentScore = 0;
+    }
+
+    public void AddScore(int amount)
+    {
+        currentScore += amount;
+        Debug.Log("Score is now " + currentScore.ToString());
     }
 }

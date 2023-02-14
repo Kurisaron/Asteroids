@@ -15,5 +15,6 @@ public class BigSaucer : Saucer
         deathActionSet = true;
 
         speed = 5.0f;
+        shootInterval = 4.0f;
     }
 }

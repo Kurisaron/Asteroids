@@ -26,6 +26,7 @@ public class SpaceShip : Destructible
         GameObject bullet = Instantiate(bulletPrefab, transform.position + (shootDirection() * 0.5f), Quaternion.identity);
         bullet.transform.forward = shootDirection();
         bullet.GetComponent<Bullet>().SetSource(bulletSource);
+        bullet.GetComponentInChildren<Renderer>().material.color = bulletSource == BulletSource.Player ? Color.yellow : Color.red;
         bullet.GetComponent<Bullet>().Shoot();
     }
 }

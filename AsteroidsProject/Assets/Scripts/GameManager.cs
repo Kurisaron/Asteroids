@@ -2,10 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EndType
+{
+    Win,
+    Lose
+}
+
 public class GameManager : Singleton<GameManager>
 {
     // VARIABLES
-    private bool gameActive;
+    private int debugIndex = 0;
+
+    public bool gameActive;
 
     private PlayerData playerData;
 
@@ -32,9 +40,11 @@ public class GameManager : Singleton<GameManager>
         StartGame();
     }
 
-    private void StartGame()
+    public void StartGame()
     {
+        playerData.currentLives = playerData.maxLives;
         playerData.level = 1;
+        playerData.LoadHighScore();
 
         SetupGame(true);
     }
@@ -58,35 +68,64 @@ public class GameManager : Singleton<GameManager>
 
         }
 
+        playerData.gameObject.GetComponent<PlayerControl>().ResetHasDied();
         gameActive = true;
-        //StartCoroutine(SpawnSaucer());
+        StartCoroutine(SpawnSaucer());
     }
 
     public void RestartGame()
     {
         gameActive = false;
-        
-        PlayerControl.local.deathAction = null;
-        PlayerControl.local.deathAction = GetDeathAction(DeathActionType.Player);
 
         SetupGame(false);
     }
 
-    public void EndGame()
+    public void EndGame(EndType endType)
     {
         gameActive = false;
+        playerData.gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
-        // Destroy all asteroids, saucers, and bullets
-        
+        // Destroy all asteroids
+        foreach(SmallAsteroid asteroid in FindObjectsOfType<SmallAsteroid>())
+        {
+            DestroyGameObject(asteroid);
+        }
+        foreach(MediumAsteroid asteroid in FindObjectsOfType<MediumAsteroid>())
+        {
+            DestroyGameObject(asteroid);
+        }
+        foreach(LargeAsteroid asteroid in FindObjectsOfType<LargeAsteroid>())
+        {
+            DestroyGameObject(asteroid);
+        }
 
-        UIManager.Instance.EnableEndScreen();
+        // Destroy all saucers
+        foreach(SmallSaucer saucer in FindObjectsOfType<SmallSaucer>())
+        {
+            DestroyGameObject(saucer);
+        }
+        foreach (BigSaucer saucer in FindObjectsOfType<BigSaucer>())
+        {
+            DestroyGameObject(saucer);
+        }
+
+        // Destroy all bullets
+        foreach (Bullet bullet in FindObjectsOfType<Bullet>())
+        {
+            DestroyGameObject(bullet);
+        }
+
+        // Update high score
+        playerData.SaveHighScore();
+
+        UIManager.Instance.EnableEndScreen(endType);
     }
 
     public void NextLevel()
     {
         if (PlayerData.Instance.level >= 3)
         {
-            EndGame();
+            EndGame(EndType.Win);
         }
         else
         {
@@ -98,9 +137,13 @@ public class GameManager : Singleton<GameManager>
 
     public IEnumerator SpawnSaucer()
     {
+        int coroutineIndex = debugIndex;
+        debugIndex++;
+        
         while (gameActive)
         {
             yield return new WaitForSeconds(10.0f);
+            if (!gameActive) break;
 
             Vector3 randomPoint = RandomPoint();
 
@@ -114,7 +157,11 @@ public class GameManager : Singleton<GameManager>
             }
 
             saucersActive += 1;
+
+            Debug.Log("Coroutine " + coroutineIndex.ToString() + " finished iteration");
         }
+
+        yield return null;
     }
 
     public void CheckForNoEnemies()
@@ -125,7 +172,7 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    public Vector3 RandomPoint()
+    private Vector3 RandomPoint()
     {
         float distanceFromOrigin = 1.0f;
         Vector3 randomPoint = Camera.main.ScreenToWorldPoint(new Vector3(Random.Range(0.0f, Screen.width), Random.Range(0.0f, Screen.height)));
@@ -134,5 +181,10 @@ public class GameManager : Singleton<GameManager>
         if (Mathf.Abs(randomPoint.z) < distanceFromOrigin) randomPoint.z += Mathf.Sign(randomPoint.z) * distanceFromOrigin;
 
         return randomPoint;
+    }
+
+    private void DestroyGameObject<T>(T component) where T : Destructible
+    {
+        Destroy(component.gameObject);
     }
 }

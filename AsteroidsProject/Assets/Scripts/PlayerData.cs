@@ -25,4 +25,18 @@ public class PlayerData : Singleton<PlayerData>
         currentScore += amount;
         Debug.Log("Score is now " + currentScore.ToString());
     }
+
+    public void SaveHighScore()
+    {
+        if (currentScore > highScore)
+        {
+            highScore = currentScore;
+            PlayerPrefs.SetInt("HighScore", highScore);
+        }
+    }
+
+    public void LoadHighScore()
+    {
+        highScore = PlayerPrefs.GetInt("HighScore");
+    }
 }

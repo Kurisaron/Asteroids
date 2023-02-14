@@ -115,6 +115,8 @@ public class Destructible : MonoBehaviour
     {
         hasDied = true;
 
+        PlayerData.Instance.currentLives--;
+
         // Die and restart
         if (PlayerData.Instance.currentLives > 0)
         {
@@ -122,7 +124,7 @@ public class Destructible : MonoBehaviour
         }
         else
         {
-            GameManager.Instance.EndGame();
+            GameManager.Instance.EndGame(EndType.Lose);
         }
     }
 

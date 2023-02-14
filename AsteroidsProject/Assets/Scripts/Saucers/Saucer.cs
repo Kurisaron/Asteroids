@@ -6,6 +6,7 @@ using UnityEngine;
 public class Saucer : SpaceShip
 {
     // VARIABLES
+    protected float shootInterval;
 
     // FUNCTIONS
     protected override void Awake()
@@ -42,7 +43,7 @@ public class Saucer : SpaceShip
         {
             Shoot();
             
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(shootInterval);
         }
     }
 }
